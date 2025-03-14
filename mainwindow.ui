@@ -6,46 +6,139 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>800</width>
-    <height>600</height>
+    <width>947</width>
+    <height>635</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>MainWindow</string>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <widget class="QTextEdit" name="textEdit_socket_input">
+   <widget class="QWidget" name="verticalLayoutWidget">
     <property name="geometry">
      <rect>
-      <x>40</x>
-      <y>110</y>
-      <width>104</width>
-      <height>75</height>
+      <x>10</x>
+      <y>70</y>
+      <width>793</width>
+      <height>511</height>
      </rect>
     </property>
+    <layout class="QVBoxLayout" name="verticalLayout">
+     <item>
+      <layout class="QHBoxLayout" name="horizontalLayout_2">
+       <item>
+        <widget class="QTextEdit" name="textEdit_socket_input"/>
+       </item>
+       <item>
+        <layout class="QVBoxLayout" name="verticalLayout_3">
+         <item>
+          <widget class="QPushButton" name="pushButton_socket_send">
+           <property name="text">
+            <string>发送</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QComboBox" name="comboBox_send_format">
+           <item>
+            <property name="text">
+             <string>char</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>hex</string>
+            </property>
+           </item>
+          </widget>
+         </item>
+        </layout>
+       </item>
+      </layout>
+     </item>
+     <item>
+      <layout class="QHBoxLayout" name="horizontalLayout_3">
+       <item>
+        <widget class="QTextBrowser" name="textBrowser_recv_display"/>
+       </item>
+       <item>
+        <widget class="QComboBox" name="comboBox_display_format">
+         <item>
+          <property name="text">
+           <string>char</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>hex</string>
+          </property>
+         </item>
+        </widget>
+       </item>
+      </layout>
+     </item>
+    </layout>
    </widget>
-   <widget class="QPushButton" name="pushButton_socket_send">
+   <widget class="QWidget" name="horizontalLayoutWidget">
     <property name="geometry">
      <rect>
-      <x>220</x>
-      <y>130</y>
-      <width>93</width>
-      <height>28</height>
+      <x>10</x>
+      <y>20</y>
+      <width>711</width>
+      <height>41</height>
      </rect>
     </property>
-    <property name="text">
-     <string>PushButton</string>
-    </property>
-   </widget>
-   <widget class="QTextBrowser" name="textBrowser_recv_display">
-    <property name="geometry">
-     <rect>
-      <x>30</x>
-      <y>310</y>
-      <width>256</width>
-      <height>192</height>
-     </rect>
-    </property>
+    <layout class="QHBoxLayout" name="horizontalLayout">
+     <item>
+      <widget class="QTextEdit" name="textEdit_ip0">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="minimumSize">
+        <size>
+         <width>0</width>
+         <height>0</height>
+        </size>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QTextEdit" name="textEdit_ip1"/>
+     </item>
+     <item>
+      <widget class="QTextEdit" name="textEdit_ip2"/>
+     </item>
+     <item>
+      <widget class="QTextEdit" name="textEdit_ip3"/>
+     </item>
+     <item>
+      <widget class="QTextEdit" name="textEdit_port"/>
+     </item>
+     <item>
+      <widget class="QPushButton" name="pushButton_socket_connect">
+       <property name="text">
+        <string>连接</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="pushButton_socket_disconnect">
+       <property name="text">
+        <string>断开</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLabel" name="label_connect_status">
+       <property name="text">
+        <string>未连接</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
    </widget>
   </widget>
   <widget class="QMenuBar" name="menubar">
@@ -53,7 +146,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>800</width>
+     <width>947</width>
      <height>25</height>
     </rect>
    </property>
