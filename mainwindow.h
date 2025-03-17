@@ -32,6 +32,7 @@ private slots:
 private:
     Ui::MainWindow *ui;
     QTcpSocket *tcpSocket;
+    bool userInitiatedDisconnect; // 添加标志位，用于区分用户主动断开和服务器主动断开
     
     // 辅助函数
     QString getIpAddress();

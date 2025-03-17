@@ -7,6 +7,7 @@ MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
     , tcpSocket(nullptr)
+    , userInitiatedDisconnect(false) // 初始化标志位
 {
     ui->setupUi(this);
     
@@ -71,13 +72,15 @@ void MainWindow::on_pushButton_socket_connect_clicked()
 {
     // 检查当前连接状态
     if (tcpSocket->state() == QAbstractSocket::ConnectedState) {
-        QMessageBox::information(this, "提示", "已连接到服务器");
+        QMessageBox::information(this, "提示", QString("已连接到服务器 %1:%2").arg(tcpSocket->peerAddress().toString()).arg(tcpSocket->peerPort()));
         return;
     }
     
     // 如果正在连接中，提示用户并更新状态标签
     if (tcpSocket->state() == QAbstractSocket::ConnectingState) {
-        QMessageBox::information(this, "提示", "正在连接中，请稍候...");
+        QString ipAddress = getIpAddress();
+        int port = getPort();
+        QMessageBox::information(this, "提示", QString("正在连接到服务器 %1:%2，请稍候...").arg(ipAddress).arg(port));
         ui->label_connect_status->setText("连接中");
         ui->label_connect_status->setStyleSheet("color: blue;");
         return;
@@ -116,7 +119,7 @@ void MainWindow::on_pushButton_socket_connect_clicked()
     // 更新状态为连接中
     ui->label_connect_status->setText("连接中");
     ui->label_connect_status->setStyleSheet("color: blue;");
-    ui->textBrowser_recv_display->append("正在连接到服务器...");
+    ui->textBrowser_recv_display->append(QString("正在连接到服务器 %1:%2...").arg(ipAddress).arg(port));
     
     // 连接到服务器
     tcpSocket->connectToHost(ipAddress, port);
@@ -125,7 +128,11 @@ void MainWindow::on_pushButton_socket_connect_clicked()
 void MainWindow::on_pushButton_socket_disconnect_clicked()
 {
     if (tcpSocket->state() == QAbstractSocket::ConnectedState) {
+        QString ipAddress = tcpSocket->peerAddress().toString();
+        int port = tcpSocket->peerPort();
+        userInitiatedDisconnect = true; // 设置标志位，表示用户主动断开
         tcpSocket->disconnectFromHost();
+        // ui->textBrowser_recv_display->append(QString("正在断开与服务器 %1:%2 的连接...").arg(ipAddress).arg(port));
     } else {
         QMessageBox::information(this, "提示", "未连接到服务器");
     }
@@ -133,7 +140,10 @@ void MainWindow::on_pushButton_socket_disconnect_clicked()
 
 void MainWindow::onSocketConnected()
 {
-    ui->textBrowser_recv_display->append("已连接到服务器");
+    userInitiatedDisconnect = false; // 重置标志位
+    QString ipAddress = tcpSocket->peerAddress().toString();
+    int port = tcpSocket->peerPort();
+    ui->textBrowser_recv_display->append(QString("已连接到服务器 %1:%2").arg(ipAddress).arg(port));
     
     // 更新连接状态标签
     ui->label_connect_status->setText("已连接");
@@ -142,11 +152,51 @@ void MainWindow::onSocketConnected()
 
 void MainWindow::onSocketDisconnected()
 {
-    ui->textBrowser_recv_display->append("已断开连接");
+    QString ipAddress = tcpSocket->peerAddress().toString();
+    int port = tcpSocket->peerPort();
+    
+    if (userInitiatedDisconnect) {
+        ui->textBrowser_recv_display->append(QString("已断开与服务器 %1:%2 的连接").arg(ipAddress).arg(port));
+        userInitiatedDisconnect = false; // 重置标志位
+    } else {
+        ui->textBrowser_recv_display->append(QString("服务器 %1:%2 已主动断开连接").arg(ipAddress).arg(port));
+    }
     
     // 更新连接状态标签
     ui->label_connect_status->setText("未连接");
     ui->label_connect_status->setStyleSheet("color: black;");
+}
+
+void MainWindow::onSocketError(QAbstractSocket::SocketError socketError)
+{
+    Q_UNUSED(socketError);
+    
+    QString ipAddress = tcpSocket->peerAddress().toString();
+    if (ipAddress.isEmpty() && tcpSocket->state() == QAbstractSocket::UnconnectedState) {
+        ipAddress = getIpAddress();
+    }
+    
+    int port = tcpSocket->peerPort();
+    if (port == 0 && tcpSocket->state() == QAbstractSocket::UnconnectedState) {
+        port = getPort();
+    }
+    
+    // 如果是超时错误，特别处理
+    if (tcpSocket->error() == QAbstractSocket::SocketTimeoutError) {
+        ui->textBrowser_recv_display->append(QString("错误: 连接到服务器 %1:%2 超时(10秒)").arg(ipAddress).arg(port));
+    } else if (tcpSocket->error() == QAbstractSocket::RemoteHostClosedError) {
+        // 远程主机关闭连接
+        ui->textBrowser_recv_display->append(QString("错误: 服务器 %1:%2 已主动断开连接").arg(ipAddress).arg(port));
+    } else {
+        ui->textBrowser_recv_display->append(QString("错误: %1 (服务器 %2:%3)").arg(tcpSocket->errorString()).arg(ipAddress).arg(port));
+    }
+    
+    // 更新连接状态
+    ui->label_connect_status->setText("未连接");
+    ui->label_connect_status->setStyleSheet("color: black;");
+    
+    // 重置标志位
+    userInitiatedDisconnect = false;
 }
 
 void MainWindow::onSocketReadyRead()
@@ -163,22 +213,6 @@ void MainWindow::onSocketReadyRead()
         }
         ui->textBrowser_recv_display->append("接收(HEX): " + hexString);
     }
-}
-
-void MainWindow::onSocketError(QAbstractSocket::SocketError socketError)
-{
-    Q_UNUSED(socketError);
-    
-    // 如果是超时错误，特别处理
-    if (tcpSocket->error() == QAbstractSocket::SocketTimeoutError) {
-        ui->textBrowser_recv_display->append("错误: 连接超时(10秒)");
-    } else {
-        ui->textBrowser_recv_display->append("错误: " + tcpSocket->errorString());
-    }
-    
-    // 更新连接状态
-    ui->label_connect_status->setText("未连接");
-    ui->label_connect_status->setStyleSheet("color: black;");
 }
 
 QString MainWindow::getIpAddress()
